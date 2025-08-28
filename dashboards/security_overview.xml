@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<dashboard version="1" script="security_overview.js">
+  <label>Security Overview Dashboard</label>
+  <description>Real-time security monitoring and threat detection overview</description>
+  
+  <row>
+    <panel>
+      <title>Failed Login Attempts (Last 24 Hours)</title>
+      <chart>
+        <search>
+          <query>
+            | tstats count from datamodel=Authentication.Authentication where Authentication.action=failure by _time span=1h
+            | `security_content_ctime(count)`
+          </query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.legend.placement">bottom</option>
+      </chart>
+    </panel>
+    
+    <panel>
+      <title>Brute Force Attacks</title>
+      <table>
+        <search>
+          <query>
+            | tstats count from datamodel=Authentication.Authentication where Authentication.action=failure by Authentication.src, Authentication.user
+            | stats count as failure_count by Authentication.src, Authentication.user
+            | where failure_count >= 5
+            | sort - failure_count
+            | head 10
+          </query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">10</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Top Threat Sources</title>
+      <chart>
+        <search>
+          <query>
+            | tstats count from datamodel=Network_Traffic.Network_Traffic by Network_Traffic.src
+            | sort - count
+            | head 10
+          </query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">pie</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+    
+    <panel>
+      <title>Security Alerts by Severity</title>
+      <chart>
+        <search>
+          <query>
+            | tstats count from datamodel=Alerts.Alerts by Alerts.severity
+            | sort - count
+          </query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.legend.placement">bottom</option>
+      </chart>
+    </panel>
+  </row>
+  
+  <row>
+    <panel>
+      <title>Recent Security Events</title>
+      <table>
+        <search>
+          <query>
+            | tstats latest(_time) as _time, latest(Authentication.src) as src, latest(Authentication.user) as user, latest(Authentication.action) as action from datamodel=Authentication.Authentication by Authentication.src, Authentication.user
+            | sort - _time
+            | head 20
+          </query>
+          <earliest>-1h@m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</dashboard>

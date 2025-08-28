@@ -1,0 +1,16 @@
+| tstats `security_content_summariesonly` count from datamodel=Authentication.Authentication where Authentication.action=success by Authentication.src, Authentication.user, _time span=1h
+| stats count as success_count by Authentication.src, Authentication.user
+| where success_count >= 10
+| `security_content_ctime(success_count)`
+| `drop_dm_object_name(Authentication)`
+| join type=left Authentication.user [
+| tstats `security_content_summariesonly` count from datamodel=Web.Web where Web.action=success by Web.user, _time span=1h
+| stats sum(count) as web_access_count by Web.user
+| where web_access_count > 50
+| `drop_dm_object_name(Web)`
+| ]
+| eval insider_score=case(success_count>=20, 90, success_count>=15, 80, success_count>=10, 70)
+| eval threat_type="insider_threat"
+| eval description="Unusual authentication pattern detected for user: " + Authentication.user
+| eval severity=case(insider_score>=80, "high", insider_score>=70, "medium", 1=1, "low")
+| table _time, Authentication.src, Authentication.user, success_count, web_access_count, insider_score, severity, threat_type, description

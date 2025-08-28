@@ -1,0 +1,17 @@
+| tstats `security_content_summariesonly` count from datamodel=Network_Traffic.Network_Traffic where Network_Traffic.dest_port=80 OR Network_Traffic.dest_port=443 by Network_Traffic.src, Network_Traffic.dest, _time span=5m
+| stats sum(count) as connection_count, dc(Network_Traffic.dest) as unique_destinations by Network_Traffic.src
+| where connection_count >= 100 AND unique_destinations >= 10
+| `security_content_ctime(connection_count)`
+| `drop_dm_object_name(Network_Traffic)`
+| join type=left Network_Traffic.src [
+| tstats `security_content_summariesonly` count from datamodel=Web.Web where Web.action=success by Web.src, _time span=5m
+| stats sum(count) as web_requests by Web.src
+| where web_requests > 50
+| `drop_dm_object_name(Web)`
+| ]
+| eval exfiltration_score=case(connection_count>=500, 90, connection_count>=200, 80, connection_count>=100, 70)
+| eval threat_type="data_exfiltration"
+| eval description="Potential data exfiltration detected from source: " + Network_Traffic.src + " with " + connection_count + " connections to " + unique_destinations + " destinations"
+| eval severity=case(exfiltration_score>=80, "high", exfiltration_score>=70, "medium", 1=1, "low")
+| eval risk_score=exfiltration_score
+| table _time, Network_Traffic.src, connection_count, unique_destinations, web_requests, exfiltration_score, severity, threat_type, description, risk_score

@@ -1,0 +1,10 @@
+| tstats `security_content_summariesonly` count from datamodel=Authentication.Authentication where Authentication.action=failure by Authentication.src, Authentication.user, _time span=5m
+| stats count as failure_count by Authentication.src, Authentication.user
+| where failure_count >= 5
+| `security_content_ctime(failure_count)`
+| `drop_dm_object_name(Authentication)`
+| eval severity=case(failure_count>=10, "high", failure_count>=5, "medium", 1=1, "low")
+| eval threat_type="brute_force_attack"
+| eval description="Multiple failed authentication attempts detected from source: " + Authentication.src
+| eval risk_score=case(severity=="high", 90, severity=="medium", 70, severity=="low", 50)
+| table _time, Authentication.src, Authentication.user, failure_count, severity, threat_type, description, risk_score

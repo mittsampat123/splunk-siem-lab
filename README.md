@@ -1,6 +1,6 @@
 # Splunk SIEM Implementation Lab
 
-A comprehensive Security Information and Event Management (SIEM) implementation using Splunk Enterprise Security to detect and respond to cybersecurity threats in real-time.
+A comprehensive Security Information and Event Management (SIEM) implementation using Splunk Enterprise Security to detect and respond to cybersecurity threats in real time.
 
 ## Overview
 

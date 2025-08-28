@@ -88,33 +88,26 @@ splunk-siem-lab/
 
 1. **Install Splunk Enterprise**
    ```bash
-   # Download Splunk Enterprise
    wget https://download.splunk.com/products/splunk/releases/8.2.9/linux/splunk-8.2.9-4a20fb65aa2d-linux-2.6-amd64.deb
    
-   # Install package
    sudo dpkg -i splunk-8.2.9-4a20fb65aa2d-linux-2.6-amd64.deb
    
-   # Start Splunk
    sudo /opt/splunk/bin/splunk start --accept-license
    ```
 
 2. **Install Splunk Enterprise Security**
    ```bash
-   # Download Splunk ES
    wget https://download.splunk.com/products/enterprise-security/releases/7.0.0/linux/Splunk_Enterprise_Security_7.0.0.spl
    
-   # Install app
    /opt/splunk/bin/splunk install app Splunk_Enterprise_Security_7.0.0.spl
    ```
 
 3. **Configure Data Inputs**
    ```bash
-   # Copy configuration files
    cp config/inputs.conf $SPLUNK_HOME/etc/system/local/
    cp config/props.conf $SPLUNK_HOME/etc/system/local/
    cp config/transforms.conf $SPLUNK_HOME/etc/system/local/
    
-   # Restart Splunk
    /opt/splunk/bin/splunk restart
    ```
 

@@ -247,6 +247,4 @@ Built-in compliance reporting for:
 
 For questions about this SIEM implementation or cybersecurity consulting services, please reach out through GitHub or LinkedIn.
 
----
 
-**Note**: This project requires proper licensing and authorization for Splunk Enterprise Security. Ensure compliance with your organization's security policies and data handling requirements.
